@@ -15,7 +15,7 @@ import subprocess
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-shengshi_names = ["石家庄", "唐山", "秦皇岛", "邯郸", "邢台", "保定", "张家口", "承德", "沧州", "廊坊", "衡水"]
+shengshi_names =  ["湖南", "长沙", "娄底", "怀化", "衡阳", "邵阳", "常德", "梅州"]
 print(f'本次扫描{shengshi_names}的酒店频道。')
 pinyin_names = ["".join(lazy_pinyin(name, errors=lambda x: x)) for name in shengshi_names]
 
@@ -75,26 +75,6 @@ operators = {
 }
 
 
-# 获取FOFA的URL
-def get_fofa_urls(shengshi_names, operators, provinces, cities):
-    fofa_urls = []
-    for shengshi in shengshi_names:
-        pinyin_name = "".join(lazy_pinyin(shengshi, errors=lambda x: x))
-        for operator_name, org_name in operators.items():
-            search_txt = ""
-            if is_province(shengshi, provinces, cities):
-                search_txt = f'"iptv/live/zh_cn.js" && country="CN" && region="{pinyin_name}" && org="{org_name}"'
-            elif is_city(shengshi, provinces, cities):
-                search_txt = f'"iptv/live/zh_cn.js" && country="CN" && city="{pinyin_name}" && org="{org_name}"'
-            if search_txt:
-                bytes_string = search_txt.encode('utf-8')
-                encoded_search_txt = base64.b64encode(bytes_string).decode('utf-8')
-                fofa_url = f'https://fofa.info/result?qbase64={encoded_search_txt}'
-                print(f"正在扫描FOFA上 {shengshi} {operator_name}URL地址: {fofa_url}")
-                fofa_urls.append(fofa_url)
-    return fofa_urls
-
-
 # 获取ZoomEye的URL
 def get_zoomeye_urls(shengshi_names, provinces, cities):
     zoomeye_urls = []
@@ -112,18 +92,9 @@ def get_zoomeye_urls(shengshi_names, provinces, cities):
     return zoomeye_urls
 
 
-fofa_urls = get_fofa_urls(shengshi_names, operators, provinces, cities)
+
 zoomeye_urls = get_zoomeye_urls(shengshi_names, provinces, cities)
-urls = fofa_urls + zoomeye_urls
-
-
-# # 检查URL是否可访问
-# def is_url_accessible(url):
-#     try:
-#         response = requests.get(url, timeout=0.5)
-#         return response.status_code == 200
-#     except requests.exceptions.RequestException:
-#         return False
+urls = zoomeye_urls
 
 
 def modify_urls(url):
@@ -445,10 +416,10 @@ with open("iptv_results.txt", 'w', encoding='utf-8') as file:
         channel_name, channel_url, speed = result
         file.write(f"{channel_name},{channel_url},  {speed}\n")
 
-# with open("iptv_speed.txt", 'w', encoding='utf-8') as file:
-#     for result in results:
-#         channel_name, channel_url, speed = result
-#         file.write(f"{channel_name},{channel_url}\n")
+with open("iptv_speed.txt", 'w', encoding='utf-8') as file:
+    for result in results:
+        channel_name, channel_url, speed = result
+        file.write(f"{channel_name},{channel_url}\n")
 
 result_counter = 10  # 每个频道需要保留的个数
 
@@ -519,40 +490,8 @@ with open("iptv_list.txt", 'w', encoding='utf-8') as file:
     file.write(f"更新时间,#genre#\n")
     file.write(f"{now.strftime("%Y-%m-%d %H:%M:%S")},url\n")
 
-# os.remove("iptv.txt")
+os.remove("iptv.txt")
 # os.remove("iptv_results.txt")
 # os.remove("iptv_speed.txt")
 
-print("\n频道分类完毕已写入iptv_list.txt和iptv_list.m3u文件。")
-
-
-# # 将.txt文件转换为.m3u文件
-# def txt_to_m3u(input_file, output_file):
-#     # 读取txt文件内容
-#     with open(input_file, 'r', encoding='utf-8') as f:
-#         lines = f.readlines()
-#
-#     # 打开m3u文件并写入内容
-#     with open(output_file, 'w', encoding='utf-8') as f:
-#         f.write('#EXTM3U\n')
-#
-#         # 初始化genre变量
-#         genre = ''
-#
-#         # 遍历txt文件内容
-#         for line in lines:
-#             line = line.strip()
-#             if "," in line:  # 防止文件里面缺失“,”号报错
-#                 # if line:
-#                 # 检查是否是genre行
-#                 channel_name, channel_url = line.split(',', 1)
-#                 if channel_url == '#genre#':
-#                     genre = channel_name
-#                     print(genre)
-#                 else:
-#                     # 将频道信息写入m3u文件
-#                     f.write(f'#EXTINF:-1 group-title="{genre}",{channel_name}\n')
-#                     f.write(f'{channel_url}\n')
-#
-#
-# txt_to_m3u('iptv_list.txt', 'iptv_list.m3u')
+print("\n频道分类完毕已写入iptv_list.txt文件。")
